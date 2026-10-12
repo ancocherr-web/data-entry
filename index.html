@@ -31,6 +31,7 @@ input:focus{outline:none;border-color:var(--pri)}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .opts button{padding:16px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:12px;font:inherit;font-size:16px;cursor:pointer}
 .opts button.on{border-color:var(--pri);background:var(--pri);color:#fff}
+.opts button:last-child:nth-child(odd){grid-column:1/-1}
 .sum div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
 .sum span{color:var(--mut)}
 .item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:8px;font-size:13px}
@@ -120,7 +121,7 @@ const steps=[
   for(const k of["paid","rem"]){const x=digits(D[k]||"0").replace(/,/g,"");if(!/^\d+(\.\d+)?$/.test(x))return"أدخل المبالغ كأرقام فقط";D[k]=x}return""}},
  {t:"رقم الهاتف",f:[{id:"phone",l:"رقم الهاتف",m:"tel",max:11}],v(){
   D.phone=digits(D.phone||"").trim();return /^\d{10,11}$/.test(D.phone)?"":"رقم الهاتف يجب أن يكون 10 أو 11 رقماً"}},
- {t:"العمل",opts:["مراقب","سائق"],v(){return D.job?"":"اختر العمل"}},
+ {t:"العمل",opts:["سائق","مراقب","مراقب احتياط"],v(){return D.job?"":"اختر العمل"}},
  {t:"معرّف من قبل",f:[{id:"ref",l:"معرّف من قبل"}],v(){D.ref=(D.ref||"").trim();return""}},
  {t:"مراجعة وحفظ",sum:1,v(){return""}}
 ];
