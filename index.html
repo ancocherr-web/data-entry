@@ -75,7 +75,7 @@ input:focus{outline:none;border-color:var(--pri)}
 <div id="srch" class="sec"><div class="card">
 <input id="q" placeholder="ابحث بالاسم أو الهاتف أو رقم البطاقة أو المركز...">
 <div id="res"></div>
-<div class="row2"><button id="csv">تصدير CSV (يفتح بالإكسل)</button><button id="rf">تحديث من الملف</button><button id="cfg">ربط الملف</button><button id="prn">طباعة A4</button></div>
+<div class="row2"><button id="csv">تصدير CSV (يفتح بالإكسل)</button><button id="rf">تحديث من الملف</button><button id="cfg">ربط الملف</button><button id="prn">طباعة A4</button><button id="shr">نسخ رابط المشاركة</button></div>
 </div></div>
 </div>
 <div id="prt"></div>
@@ -85,6 +85,14 @@ input:focus{outline:none;border-color:var(--pri)}
 // ألصق هنا رابط Web App الناتج من Google Apps Script
 let SHEET_URL = "";
 try { SHEET_URL = localStorage.getItem("sheetUrl") || ""; } catch (e) {}
+try {
+  const m = location.hash.match(/^#u=(.+)$/);
+  if (m) {
+    SHEET_URL = decodeURIComponent(m[1]);
+    try { localStorage.setItem("sheetUrl", SHEET_URL); } catch (e) {}
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+} catch (e) {}
 
 const $=id=>document.getElementById(id);
 const ls={g:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -187,6 +195,11 @@ $("csv").onclick=()=>{
  const H=["التسلسل","الاسم","المركز","رقم البطاقة","الواصل","المتبقي","الهاتف","العمل","معرّف من قبل"];
  const c=[H].concat(all()).map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+c],{type:"text/csv"}));a.download="data.csv";a.click();
+};
+$("shr").onclick=async()=>{
+ if(!SHEET_URL){toast("اربط الملف أولاً");return}
+ const l=location.origin+location.pathname+"#u="+encodeURIComponent(SHEET_URL);
+ try{await navigator.clipboard.writeText(l);toast("تم نسخ رابط المشاركة")}catch(e){prompt("انسخ الرابط:",l)}
 };
 $("prn").onclick=()=>{
  const q=norm(digits($("q").value));
