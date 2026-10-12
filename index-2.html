@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام إدخال البيانات</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--tx:#1b2433;--mut:#6b7686;--pri:#1f6feb;--ok:#16a34a;--bad:#dc2626;--bd:#dde3ec}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1520;--card:#18212f;--tx:#e8edf5;--mut:#93a0b4;--bd:#2a3649}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Tahoma,"Segoe UI",Arial,sans-serif;padding:12px}
+.wrap{max-width:560px;margin:auto}
+h1{font-size:19px;margin:8px 0 12px;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:17px;color:var(--pri)}.stat span{font-size:11px;color:var(--mut)}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;padding:11px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;cursor:pointer}
+.tabs button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px}
+.bar{height:6px;background:var(--bd);border-radius:9px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;background:var(--pri);transition:width .25s}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:8px}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select{width:100%;padding:13px;font:inherit;font-size:16px;border:1.5px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+input:focus{outline:none;border-color:var(--pri)}
+.err{color:var(--bad);font-size:13px;min-height:18px;margin-top:6px}
+.nav{display:flex;gap:8px;margin-top:14px}
+.nav button{flex:1;padding:13px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+.nx{background:var(--pri);color:#fff}.bk{background:var(--bd);color:var(--tx);flex:.5!important}.sv{background:var(--ok);color:#fff}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opts button{padding:16px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:12px;font:inherit;font-size:16px;cursor:pointer}
+.opts button.on{border-color:var(--pri);background:var(--pri);color:#fff}
+.sum div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd);font-size:14px}
+.sum span{color:var(--mut)}
+.item{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-top:8px;font-size:13px}
+.item b{font-size:15px}.item small{color:var(--mut)}
+.tag{display:inline-block;background:var(--bd);border-radius:6px;padding:1px 8px;font-size:12px;margin-inline-start:6px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 18px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;font-size:14px}
+.toast.show{opacity:1}
+.sec{display:none}.sec.on{display:block}
+.warn{background:#fff3cd;color:#664d03;border-radius:10px;padding:9px;font-size:13px;margin-bottom:10px;display:none}
+#prt{display:none;direction:rtl;font-size:11px;color:#000}
+#prt h2{text-align:center;margin:0 0 6px;font-size:18px}
+#prt .sub{display:flex;justify-content:space-between;margin-bottom:8px}
+#prt table{width:100%;border-collapse:collapse}
+#prt th,#prt td{border:1px solid #444;padding:4px 5px;text-align:right}
+#prt th{background:#e6e6e6}
+#prt thead{display:table-header-group}
+#prt tr{page-break-inside:avoid}
+#prt tfoot td{font-weight:700;background:#f2f2f2}
+@media print{@page{size:A4 landscape;margin:10mm}html,body{background:#fff!important;padding:0}.wrap,.toast{display:none!important}#prt{display:block}}
+.row2{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.row2 button{flex:1 1 30%;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>نظام إدخال البيانات</h1>
+<div class="stats">
+<div class="stat"><b id="sN">0</b><span>عدد المسجلين</span></div>
+<div class="stat"><b id="sP">0</b><span>مجموع الواصل</span></div>
+<div class="stat"><b id="sR">0</b><span>مجموع المتبقي</span></div>
+</div>
+<div class="tabs"><button id="t1" class="on">إضافة</button><button id="t2">بحث</button></div>
+<div class="warn" id="warn"></div>
+
+<div id="add" class="sec on"><div class="card">
+<div class="meta"><span id="stp"></span><span>التسلسل القادم: <b id="ser"></b></span></div>
+<div class="bar"><i id="bar"></i></div>
+<div id="body"></div>
+<div class="err" id="err"></div>
+<div class="nav"><button class="bk" id="bk">رجوع</button><button class="nx" id="nx">التالي</button></div>
+</div></div>
+
+<div id="srch" class="sec"><div class="card">
+<input id="q" placeholder="ابحث بالاسم أو الهاتف أو رقم البطاقة أو المركز...">
+<div id="res"></div>
+<div class="row2"><button id="csv">تصدير CSV (يفتح بالإكسل)</button><button id="rf">تحديث من الملف</button><button id="cfg">ربط الملف</button><button id="prn">طباعة A4</button></div>
+</div></div>
+</div>
+<div id="prt"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ألصق هنا رابط Web App الناتج من Google Apps Script
+let SHEET_URL = "";
+try { SHEET_URL = localStorage.getItem("sheetUrl") || ""; } catch (e) {}
+
+const $=id=>document.getElementById(id);
+const ls={g:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let rows=ls.g("rows",[]), pend=ls.g("pend",[]), step=0, D={};
+const digits=s=>String(s).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+const norm=s=>String(s).replace(/[\u064B-\u065F\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/\s+/g," ").trim();
+const toArr=r=>[r.serial,r.name,r.center,r.card,r.paid,r.rem,r.phone,r.job,r.ref];
+const all=()=>rows.concat(pend.map(toArr));
+const nextSerial=()=>all().length+1;
+const num=v=>parseFloat(digits(v).replace(/,/g,""))||0;
+const fmt=n=>n.toLocaleString("en-US");
+
+const steps=[
+ {t:"الاسم الثلاثي",f:[{id:"name",l:"الاسم الثلاثي",ph:"مثال: أحمد علي حسن"}],v(){
+  D.name=norm(D.name||"");
+  if(D.name.split(" ").length<3)return"الاسم يجب أن يكون ثلاثياً على الأقل";
+  if(all().some(r=>norm(r[1])===D.name))return"هذا الاسم مسجل مسبقاً";return""}},
+ {t:"مركز الاقتراع",f:[{id:"center",l:"اسم مركز الاقتراع"}],v(){
+  D.center=(D.center||"").trim();return D.center?"":"أدخل اسم المركز"}},
+ {t:"بطاقة الناخب",f:[{id:"card",l:"رقم بطاقة الناخب (8 أرقام)",m:"numeric",max:8}],v(){
+  D.card=digits(D.card||"").trim();
+  if(!/^\d{8}$/.test(D.card))return"الرقم يجب أن يكون 8 أرقام بالضبط";
+  if(all().some(r=>String(r[3])===D.card))return"رقم البطاقة مسجل مسبقاً";return""}},
+ {t:"المبالغ",k:1,f:[{id:"paid",l:"المبلغ الواصل (بالآلاف: اكتب 100 = 100,000)",m:"decimal"},{id:"rem",l:"المبلغ المتبقي (بالآلاف: اكتب 50 = 50,000)",m:"decimal"}],v(){
+  for(const k of["paid","rem"]){const x=digits(D[k]||"0").replace(/,/g,"");if(!/^\d+(\.\d+)?$/.test(x))return"أدخل المبالغ كأرقام فقط";D[k]=x}return""}},
+ {t:"رقم الهاتف",f:[{id:"phone",l:"رقم الهاتف",m:"tel",max:11}],v(){
+  D.phone=digits(D.phone||"").trim();return /^\d{10,11}$/.test(D.phone)?"":"رقم الهاتف يجب أن يكون 10 أو 11 رقماً"}},
+ {t:"العمل",opts:["مراقب","سائق"],v(){return D.job?"":"اختر العمل"}},
+ {t:"معرّف من قبل",f:[{id:"ref",l:"معرّف من قبل"}],v(){D.ref=(D.ref||"").trim();return""}},
+ {t:"مراجعة وحفظ",sum:1,v(){return""}}
+];
+
+function render(){
+ const s=steps[step];let h="";
+ $("stp").textContent="الخطوة "+(step+1)+" من "+steps.length+" — "+s.t;
+ $("bar").style.width=((step+1)/steps.length*100)+"%";
+ $("ser").textContent=nextSerial();
+ if(s.f)s.f.forEach(f=>h+=`<label>${f.l}</label><input id="${f.id}" ${f.m?`inputmode="${f.m}"`:""} ${f.max?`maxlength="${f.max}"`:""} placeholder="${f.ph||""}" value="${(D[f.id]||"").replace(/"/g,"&quot;")}" autocomplete="off">`);
+ if(s.opts){h+=`<label>العمل</label><div class="opts">`+s.opts.map(o=>`<button data-o="${o}" class="${D.job===o?"on":""}">${o}</button>`).join("")+`</div>`}
+ if(s.sum){const L=[["التسلسل",nextSerial()],["الاسم",D.name],["المركز",D.center],["رقم البطاقة",D.card],["الواصل",fmt(Math.round(num(D.paid)*1000))],["المتبقي",fmt(Math.round(num(D.rem)*1000))],["الهاتف",D.phone],["العمل",D.job],["معرّف من قبل",D.ref||"—"]];
+  h+=`<div class="sum">`+L.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join("")+`</div>`}
+ $("body").innerHTML=h;$("err").textContent="";
+ if(s.k){const pv=document.createElement("div");pv.className="err";pv.style.color="var(--ok)";$("body").appendChild(pv);
+  const up=()=>{pv.innerHTML="الواصل: <b>"+fmt(Math.round(num($("paid").value)*1000))+"</b> — المتبقي: <b>"+fmt(Math.round(num($("rem").value)*1000))+"</b>"};
+  $("paid").oninput=$("rem").oninput=up;up()}
+ $("bk").style.visibility=step?"visible":"hidden";
+ $("nx").textContent=s.sum?"حفظ":"التالي";$("nx").className=s.sum?"sv":"nx";
+ const first=$("body").querySelector("input");if(first)first.focus();
+ document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{D.job=b.dataset.o;next()});
+}
+function collect(){(steps[step].f||[]).forEach(f=>D[f.id]=$(f.id).value)}
+function next(){
+ if(steps[step].f)collect();
+ const e=steps[step].v();if(e){$("err").textContent=e;return}
+ if(steps[step].sum){return save()}
+ step++;render();
+}
+function save(){
+ const rec={serial:nextSerial(),name:D.name,center:D.center,card:D.card,paid:Math.round(num(D.paid)*1000),rem:Math.round(num(D.rem)*1000),phone:D.phone,job:D.job,ref:D.ref||""};
+ pend.push(rec);ls.s("pend",pend);D={};step=0;toast("تم الحفظ");render();stats();sync();
+}
+async function sync(){
+ if(!SHEET_URL){warn("لم يتم ربط الملف بعد، البيانات محفوظة على هذا الجهاز فقط.");return}
+ const left=[];
+ for(const r of pend){
+  try{await fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(r)})}
+  catch(e){left.push(r)}
+ }
+ pend=left;ls.s("pend",pend);
+ await load();
+ warn(pend.length?pend.length+" سجل بانتظار الإرسال (لا يوجد اتصال).":"");
+}
+async function load(){
+ if(!SHEET_URL){stats();return}
+ try{const v=await (await fetch(SHEET_URL)).json();
+  if(!Array.isArray(v)){warn(v.error||"خطأ بقراءة الملف");stats();return}
+  rows=v.filter(r=>r[1]);ls.s("rows",rows)}catch(e){warn("تعذر الاتصال بالملف، تأكد من الرابط والنشر.")}
+ stats();if($("srch").classList.contains("on"))find();
+}
+function warn(m){$("warn").style.display=m?"block":"none";$("warn").textContent=m}
+function stats(){const a=all();$("sN").textContent=a.length;$("sP").textContent=fmt(a.reduce((t,r)=>t+num(r[4]),0));$("sR").textContent=fmt(a.reduce((t,r)=>t+num(r[5]),0));$("ser").textContent=nextSerial()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800)}
+function find(){
+ const q=norm(digits($("q").value));
+ const a=all().filter(r=>!q||norm(digits(r.join(" "))).includes(q)).slice(0,50);
+ $("res").innerHTML=a.length?a.map(r=>`<div class="item"><b>${r[0]}. ${r[1]}</b><span class="tag">${r[7]}</span><br><small>${r[2]} • بطاقة ${r[3]} • ${r[6]}<br>الواصل ${fmt(num(r[4]))} • المتبقي ${fmt(num(r[5]))}${r[8]?" • معرّف: "+r[8]:""}</small></div>`).join(""):`<div class="item">لا توجد نتائج</div>`;
+}
+function tab(n){$("add").classList.toggle("on",n==1);$("srch").classList.toggle("on",n==2);$("t1").classList.toggle("on",n==1);$("t2").classList.toggle("on",n==2);if(n==2)find()}
+$("t1").onclick=()=>tab(1);$("t2").onclick=()=>tab(2);
+$("q").oninput=find;$("nx").onclick=next;
+$("bk").onclick=()=>{if(steps[step].f)collect();step--;render()};
+$("rf").onclick=async()=>{await sync();toast("تم التحديث")};
+$("cfg").onclick=async()=>{
+ const u=prompt("الصق رابط Web App (ينتهي بـ /exec):",SHEET_URL);
+ if(u===null)return;
+ SHEET_URL=u.trim();try{localStorage.setItem("sheetUrl",SHEET_URL)}catch(e){}
+ await sync();toast("تم الربط");
+};
+$("csv").onclick=()=>{
+ const H=["التسلسل","الاسم","المركز","رقم البطاقة","الواصل","المتبقي","الهاتف","العمل","معرّف من قبل"];
+ const c=[H].concat(all()).map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+c],{type:"text/csv"}));a.download="data.csv";a.click();
+};
+$("prn").onclick=()=>{
+ const q=norm(digits($("q").value));
+ const a=all().filter(r=>!q||norm(digits(r.join(" "))).includes(q));
+ if(!a.length){toast("لا توجد بيانات للطباعة");return}
+ const e=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+ const tp=a.reduce((t,r)=>t+num(r[4]),0),tr=a.reduce((t,r)=>t+num(r[5]),0);
+ const body=a.map(r=>"<tr>"+[r[0],r[1],r[2],r[3],fmt(num(r[4])),fmt(num(r[5])),r[6],r[7],r[8]||""].map(x=>"<td>"+e(x)+"</td>").join("")+"</tr>").join("");
+ $("prt").innerHTML=`<h2>كشف البيانات</h2><div class="sub"><span>التاريخ: ${new Date().toLocaleDateString("en-GB")}</span><span>العدد: ${a.length}${q?" (نتائج البحث)":""}</span></div>
+ <table><thead><tr>${["ت","الاسم","مركز الاقتراع","رقم البطاقة","الواصل","المتبقي","الهاتف","العمل","معرّف من قبل"].map(h=>"<th>"+h+"</th>").join("")}</tr></thead>
+ <tbody>${body}</tbody><tfoot><tr><td colspan="4">المجموع</td><td>${fmt(tp)}</td><td>${fmt(tr)}</td><td colspan="3"></td></tr></tfoot></table>`;
+ window.print();
+};
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&$("add").classList.contains("on")&&!e.target.matches("button")){e.preventDefault();next()}});
+render();stats();sync();
+</script>
+</body>
+</html>
